@@ -1,4 +1,4 @@
-﻿// lib/types.ts
+// lib/types.ts
 // Shared TypeScript interfaces used across API routes
 
 export interface ProjectRow {

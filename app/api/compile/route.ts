@@ -1,4 +1,4 @@
-﻿// app/api/compile/route.ts
+// app/api/compile/route.ts
 // Stub for Phase 3 compile/export service.
 // Keeps dev server running even before full logic is implemented.
 

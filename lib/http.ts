@@ -1,4 +1,4 @@
-﻿// lib/http.ts
+// lib/http.ts
 // Unified helpers for consistent API responses.
 
 export function jsonResponse(data: any, status: number = 200) {

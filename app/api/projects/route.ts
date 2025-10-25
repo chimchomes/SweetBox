@@ -1,4 +1,4 @@
-﻿// app/api/projects/route.ts
+// app/api/projects/route.ts
 import { supabase } from "@/lib/db";
 import { jsonResponse, errorResponse } from "@/lib/http";
 
