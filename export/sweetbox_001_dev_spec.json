@@ -1,0 +1,18 @@
+{
+    "project":  {
+                    "id":  "sweetbox_001",
+                    "name":  "SweetBox",
+                    "goal":  "Compile project spec into AI builder prompt + developer spec.",
+                    "audience":  "Product owners / internal tool builders",
+                    "default_route":  "page_dashboard"
+                },
+    "pages":  [
+
+              ],
+    "forms":  [
+
+              ],
+    "buttons":  [
+
+                ]
+}

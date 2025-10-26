@@ -1,0 +1,14 @@
+You are an app builder. Create an application called SweetBox.
+Project ID: sweetbox_001
+
+PAGES:
+  (no pages yet)
+
+FORMS:
+  (no forms yet)
+
+BUTTONS:
+  (no buttons yet)
+
+Build the UI screens and flows according to these elements.
+Generate working navigation between pages/buttons.
