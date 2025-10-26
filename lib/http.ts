@@ -1,4 +1,4 @@
-// lib/http.ts
+﻿// lib/http.ts
 // Unified helpers for consistent API responses.
 
 export function jsonResponse(data: any, status: number = 200) {
@@ -10,6 +10,7 @@ export function jsonResponse(data: any, status: number = 200) {
   });
 }
 
+// Always return valid JSON on error so frontend .json() never explodes
 export function errorResponse(message: string, status: number = 500) {
-  return jsonResponse({ error: message }, status);
+  return jsonResponse({ ok: false, error: message }, status);
 }
