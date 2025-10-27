@@ -7,12 +7,129 @@
                     "default_route":  "page_dashboard"
                 },
     "pages":  [
-
+                  {
+                      "id":  "page_dashboard",
+                      "label":  "Dashboard",
+                      "description":  "Main dashboard with metrics and quick actions",
+                      "layout_content":  null,
+                      "visibility":  null
+                  }
               ],
     "forms":  [
 
               ],
     "buttons":  [
+                    {
+                        "id":  "btn_save",
+                        "label":  "Save",
+                        "description":  "Save current progress",
+                        "placement":  null,
+                        "actions":  [
 
-                ]
+                                    ],
+                        "visibility":  null
+                    },
+                    {
+                        "id":  "btn_go_dashboard",
+                        "label":  "Go to Dashboard",
+                        "description":  "Navigate user back to main dashboard",
+                        "placement":  null,
+                        "actions":  [
+
+                                    ],
+                        "visibility":  null
+                    }
+                ],
+    "database":  {
+                     "provider":  "supabase",
+                     "tables":  [
+                                    {
+                                        "name":  "projects",
+                                        "description":  "Top-level SweetBox projects",
+                                        "columns":  [
+                                                        {
+                                                            "name":  "project_id",
+                                                            "type":  "text",
+                                                            "primary_key":  true,
+                                                            "nullable":  false
+                                                        },
+                                                        {
+                                                            "name":  "project_name",
+                                                            "type":  "text",
+                                                            "nullable":  false
+                                                        }
+                                                    ]
+                                    },
+                                    {
+                                        "name":  "elements",
+                                        "description":  "Pages, Forms, Buttons defined by the user",
+                                        "columns":  [
+                                                        {
+                                                            "name":  "id",
+                                                            "type":  "bigserial",
+                                                            "primary_key":  true,
+                                                            "nullable":  false,
+                                                            "generated":  "identity"
+                                                        },
+                                                        {
+                                                            "name":  "project_id",
+                                                            "type":  "text",
+                                                            "nullable":  false,
+                                                            "references":  "projects.project_id"
+                                                        },
+                                                        {
+                                                            "name":  "type",
+                                                            "type":  "text",
+                                                            "nullable":  false
+                                                        },
+                                                        {
+                                                            "name":  "element_id",
+                                                            "type":  "text",
+                                                            "nullable":  false
+                                                        },
+                                                        {
+                                                            "name":  "display_name",
+                                                            "type":  "text",
+                                                            "nullable":  false
+                                                        },
+                                                        {
+                                                            "name":  "description",
+                                                            "type":  "text",
+                                                            "nullable":  true
+                                                        },
+                                                        {
+                                                            "name":  "button_actions",
+                                                            "type":  "jsonb",
+                                                            "nullable":  true
+                                                        },
+                                                        {
+                                                            "name":  "created_at",
+                                                            "type":  "timestamptz",
+                                                            "nullable":  false,
+                                                            "default":  "now()"
+                                                        },
+                                                        {
+                                                            "name":  "updated_at",
+                                                            "type":  "timestamptz",
+                                                            "nullable":  false,
+                                                            "default":  "now()"
+                                                        }
+                                                    ],
+                                        "indexes":  [
+                                                        {
+                                                            "name":  "idx_elements_project",
+                                                            "columns":  [
+                                                                            "project_id"
+                                                                        ]
+                                                        },
+                                                        {
+                                                            "name":  "idx_elements_element_id",
+                                                            "columns":  [
+                                                                            "element_id"
+                                                                        ]
+                                                        }
+                                                    ]
+                                    }
+                                ]
+                 }
 }

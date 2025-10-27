@@ -1,6 +1,26 @@
 {
     "project_id":  "sweetbox_001",
     "snapshot":  [
-
+                     {
+                         "project_id":  "sweetbox_001",
+                         "type":  "page",
+                         "element_id":  "page_dashboard",
+                         "display_name":  "Dashboard",
+                         "description":  "Main dashboard with metrics and quick actions"
+                     },
+                     {
+                         "project_id":  "sweetbox_001",
+                         "type":  "button",
+                         "element_id":  "btn_save",
+                         "display_name":  "Save",
+                         "description":  "Save current progress"
+                     },
+                     {
+                         "project_id":  "sweetbox_001",
+                         "type":  "button",
+                         "element_id":  "btn_go_dashboard",
+                         "display_name":  "Go to Dashboard",
+                         "description":  "Navigate user back to main dashboard"
+                     }
                  ]
 }
