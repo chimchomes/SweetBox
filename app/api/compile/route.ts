@@ -1,25 +1,23 @@
 // app/api/compile/route.ts
+// Phase 12: read from Supabase instead of memoryStore.
+// Output contract is unchanged: ai_builder_prompt, developer_spec, machine_registry, db_sql_schema.
+
 import { NextRequest } from "next/server";
 import { jsonResponse, errorResponse } from "@/lib/http";
-import { listElements } from "@/lib/memoryStore";
+import { supabase } from "@/lib/db";
 import { describeActions } from "@/lib/actions";
 
-type SweetboxElement = {
+type SweetboxElementRow = {
   project_id: string;
-  type: "page" | "form" | "button";
+  type: "page" | "form" | "button" | "form_field";
   element_id: string;
   display_name: string;
-  description: string;
-  button_actions?: {
-    action_type: "navigate" | "save_progress" | "submit_form" | "custom";
-    details: string;
-    target?: string;
-  }[];
+  description: string | null;
+  button_actions: any[] | null;
 };
 
-// --- DB model builders ------------------------------------------------
-
-function buildDatabaseModel(projectId: string, elements: SweetboxElement[]) {
+// Build DB model block for developer_spec
+function buildDatabaseModel() {
   return {
     provider: "supabase",
     tables: [
@@ -37,7 +35,7 @@ function buildDatabaseModel(projectId: string, elements: SweetboxElement[]) {
         columns: [
           { name: "id", type: "bigserial", primary_key: true, nullable: false, generated: "identity" },
           { name: "project_id", type: "text", nullable: false, references: "projects.project_id" },
-          { name: "type", type: "text", nullable: false }, // page | form | button
+          { name: "type", type: "text", nullable: false },
           { name: "element_id", type: "text", nullable: false },
           { name: "display_name", type: "text", nullable: false },
           { name: "description", type: "text", nullable: true },
@@ -54,7 +52,8 @@ function buildDatabaseModel(projectId: string, elements: SweetboxElement[]) {
   };
 }
 
-function buildDatabaseSQL(projectId: string) {
+// Build runnable SQL schema string
+function buildDatabaseSQL() {
   return `-- projects table
 create table if not exists projects (
   project_id text primary key,
@@ -82,12 +81,11 @@ create index if not exists idx_elements_element_id
 `;
 }
 
-// --- Prompt + Spec builders ------------------------------------------
-
-function buildAiBuilderPrompt(projectId: string, elements: SweetboxElement[]) {
-  const pages = elements.filter((e) => e.type === "page");
-  const forms = elements.filter((e) => e.type === "form");
-  const buttons = elements.filter((e) => e.type === "button");
+// ai_builder_prompt
+function buildAiBuilderPrompt(projectId: string, elements: SweetboxElementRow[]) {
+  const pages    = elements.filter((e) => e.type === "page");
+  const forms    = elements.filter((e) => e.type === "form");
+  const buttons  = elements.filter((e) => e.type === "button");
 
   const lines: string[] = [];
   lines.push("You are an app builder. Create an application called SweetBox.");
@@ -108,81 +106,115 @@ function buildAiBuilderPrompt(projectId: string, elements: SweetboxElement[]) {
   if (buttons.length === 0) lines.push("  (no buttons yet)");
   else buttons.forEach((b) => {
     lines.push(`  - ${b.element_id}: ${b.description || "(no description)"}`);
-    const actionLines = describeActions(b.button_actions || []);
+    const actionLines = describeActions((b.button_actions || []) as any[]);
     actionLines.forEach((al) => lines.push(al));
   });
   lines.push("");
   lines.push("Build the UI screens, navigation, and state handling according to this spec.");
 
-  return lines.join("\\n");
+  return lines.join("\n");
 }
 
-function buildDeveloperSpec(projectId: string, elements: SweetboxElement[]) {
+// developer_spec block
+function buildDeveloperSpec(
+  projectId: string,
+  elements: SweetboxElementRow[],
+  projectMeta: any | null
+) {
   return {
     project: {
       id: projectId,
-      name: "SweetBox",
-      goal: "Compile project spec into AI builder prompt + developer spec.",
-      audience: "Product owners / internal tool builders",
-      default_route: "page_dashboard"
+      name: projectMeta?.project_name ?? "SweetBox",
+      goal: projectMeta?.app_goal ?? "Compile project spec into AI builder prompt + developer spec.",
+      audience: projectMeta?.audience ?? "Product owners / internal tool builders",
+      default_route: projectMeta?.default_route ?? "page_dashboard"
     },
-    pages: elements.filter((e) => e.type === "page").map((e) => ({
-      id: e.element_id,
-      label: e.display_name,
-      description: e.description,
-      layout_content: null,
-      visibility: null
-    })),
-    forms: elements.filter((e) => e.type === "form").map((e) => ({
-      id: e.element_id,
-      label: e.display_name,
-      description: e.description,
-      standard_behavior: {
-        paginate_max_fields: 10,
-        include_prev_next: true,
-        include_save_progress: true,
-        include_submit: true
-      },
-      form_fields: [],
-      on_submit: null,
-      post_submit: null,
-      visibility: null
-    })),
-    buttons: elements.filter((e) => e.type === "button").map((e) => ({
-      id: e.element_id,
-      label: e.display_name,
-      description: e.description,
-      placement: null,
-      actions: e.button_actions || [],
-      visibility: null
-    })),
-    // <-- NEW: database model for backend devs
-    database: buildDatabaseModel(projectId, elements)
+    pages: elements
+      .filter((e) => e.type === "page")
+      .map((e) => ({
+        id: e.element_id,
+        label: e.display_name,
+        description: e.description,
+        layout_content: null,
+        visibility: null
+      })),
+    forms: elements
+      .filter((e) => e.type === "form")
+      .map((e) => ({
+        id: e.element_id,
+        label: e.display_name,
+        description: e.description,
+        standard_behavior: {
+          paginate_max_fields: 10,
+          include_prev_next: true,
+          include_save_progress: true,
+          include_submit: true
+        },
+        form_fields: [],
+        on_submit: null,
+        post_submit: null,
+        visibility: null
+      })),
+    buttons: elements
+      .filter((e) => e.type === "button")
+      .map((e) => ({
+        id: e.element_id,
+        label: e.display_name,
+        description: e.description,
+        placement: null,
+        actions: e.button_actions || [],
+        visibility: null
+      })),
+    database: buildDatabaseModel()
   };
 }
 
-function buildMachineRegistry(projectId: string, elements: SweetboxElement[]) {
+// machine_registry block
+function buildMachineRegistry(projectId: string, elements: SweetboxElementRow[]) {
   return {
     project_id: projectId,
     snapshot: elements
   };
 }
 
-// --- GET /api/compile -------------------------------------------------
-
+// GET /api/compile?project_id=sweetbox_001
 export async function GET(req: NextRequest) {
   try {
     const projectId = req.nextUrl.searchParams.get("project_id") || "";
     if (!projectId) return errorResponse("Missing project_id", 400);
 
-    const allForProject = listElements(projectId);
+    // load project metadata
+    const { data: projectRows, error: projErr } = await supabase
+      .from('projects')
+      .select('project_id, project_name, app_goal, audience, default_route')
+      .eq('project_id', projectId)
+      .limit(1)
 
-    const ai_builder_prompt = buildAiBuilderPrompt(projectId, allForProject);
-    const developer_spec = buildDeveloperSpec(projectId, allForProject);
-    const machine_registry = buildMachineRegistry(projectId, allForProject);
+    if (projErr) {
+      console.error("GET /api/compile project error:", projErr)
+      return errorResponse("DB error (project)", 500)
+    }
+    const projectMeta = projectRows && projectRows[0] ? projectRows[0] : null
 
-    // <-- NEW: db_sql_schema (runnable migration for Supabase/Postgres)
-    const db_sql_schema = buildDatabaseSQL(projectId);
+    // load all elements for project
+    const { data: elemRows, error: elemErr } = await supabase
+      .from('elements')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('id', { ascending: true })
+
+    if (elemErr) {
+      console.error("GET /api/compile elements error:", elemErr)
+      return errorResponse("DB error (elements)", 500)
+    }
+
+    const elements = (elemRows || []) as SweetboxElementRow[]
+
+    // build payloads
+    const ai_builder_prompt = buildAiBuilderPrompt(projectId, elements);
+    const developer_spec   = buildDeveloperSpec(projectId, elements, projectMeta);
+    const machine_registry = buildMachineRegistry(projectId, elements);
+    const db_sql_schema    = buildDatabaseSQL();
 
     return jsonResponse({
       ai_builder_prompt,
@@ -191,7 +223,7 @@ export async function GET(req: NextRequest) {
       db_sql_schema
     });
   } catch (err: any) {
-    console.error("GET /api/compile error:", err);
+    console.error("GET /api/compile fatal:", err);
     return errorResponse("Internal Server Error (/api/compile)", 500);
   }
 }
