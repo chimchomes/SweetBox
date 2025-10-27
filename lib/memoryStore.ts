@@ -33,12 +33,6 @@ const _elements: ElementInfo[] = [
     element_id: "btn_save",
     display_name: "Save",
     description: "Save current progress",
-    button_actions: [
-      {
-        action_type: "save_progress",
-        details: "Persist current draft data for the user without final submit",
-      },
-    ],
   },
   {
     project_id: "sweetbox_001",
@@ -46,13 +40,6 @@ const _elements: ElementInfo[] = [
     element_id: "btn_go_dashboard",
     display_name: "Go to Dashboard",
     description: "Navigate user back to main dashboard",
-    button_actions: [
-      {
-        action_type: "navigate",
-        target: "page_dashboard",
-        details: "Route the user to page_dashboard",
-      },
-    ],
   },
 ];
 
