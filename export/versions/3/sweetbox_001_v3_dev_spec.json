@@ -1,0 +1,142 @@
+﻿{
+    "forms":  [
+
+              ],
+    "pages":  [
+                  {
+                      "id":  "page_dashboard",
+                      "label":  "Dashboard",
+                      "visibility":  null,
+                      "description":  "Main dashboard with metrics and quick actions test001",
+                      "layout_content":  null
+                  }
+              ],
+    "buttons":  [
+                    {
+                        "id":  "btn_save",
+                        "label":  "Save",
+                        "actions":  [
+                                        {
+                                            "details":  "Save current state locally",
+                                            "action_type":  "save_progress"
+                                        }
+                                    ],
+                        "placement":  null,
+                        "visibility":  null,
+                        "description":  "Save current progress"
+                    },
+                    {
+                        "id":  "btn_go_dashboard",
+                        "label":  "Go to Dashboard",
+                        "actions":  [
+                                        {
+                                            "target":  "page_dashboard",
+                                            "details":  "Go to dashboard page",
+                                            "action_type":  "navigate"
+                                        }
+                                    ],
+                        "placement":  null,
+                        "visibility":  null,
+                        "description":  "Navigate to dashboard"
+                    }
+                ],
+    "project":  {
+                    "id":  "sweetbox_001",
+                    "goal":  "Compile structured app specs into AI-friendly prompts and developer specs.",
+                    "name":  "SweetBox",
+                    "audience":  "Product designers and builders",
+                    "default_route":  "page_dashboard"
+                },
+    "database":  {
+                     "tables":  [
+                                    {
+                                        "name":  "projects",
+                                        "columns":  [
+                                                        {
+                                                            "name":  "project_id",
+                                                            "type":  "text",
+                                                            "nullable":  false,
+                                                            "primary_key":  true
+                                                        },
+                                                        {
+                                                            "name":  "project_name",
+                                                            "type":  "text",
+                                                            "nullable":  false
+                                                        }
+                                                    ],
+                                        "description":  "Top-level SweetBox projects"
+                                    },
+                                    {
+                                        "name":  "elements",
+                                        "columns":  [
+                                                        {
+                                                            "name":  "id",
+                                                            "type":  "bigserial",
+                                                            "nullable":  false,
+                                                            "generated":  "identity",
+                                                            "primary_key":  true
+                                                        },
+                                                        {
+                                                            "name":  "project_id",
+                                                            "type":  "text",
+                                                            "nullable":  false,
+                                                            "references":  "projects.project_id"
+                                                        },
+                                                        {
+                                                            "name":  "type",
+                                                            "type":  "text",
+                                                            "nullable":  false
+                                                        },
+                                                        {
+                                                            "name":  "element_id",
+                                                            "type":  "text",
+                                                            "nullable":  false
+                                                        },
+                                                        {
+                                                            "name":  "display_name",
+                                                            "type":  "text",
+                                                            "nullable":  false
+                                                        },
+                                                        {
+                                                            "name":  "description",
+                                                            "type":  "text",
+                                                            "nullable":  true
+                                                        },
+                                                        {
+                                                            "name":  "button_actions",
+                                                            "type":  "jsonb",
+                                                            "nullable":  true
+                                                        },
+                                                        {
+                                                            "name":  "created_at",
+                                                            "type":  "timestamptz",
+                                                            "default":  "now()",
+                                                            "nullable":  false
+                                                        },
+                                                        {
+                                                            "name":  "updated_at",
+                                                            "type":  "timestamptz",
+                                                            "default":  "now()",
+                                                            "nullable":  false
+                                                        }
+                                                    ],
+                                        "indexes":  [
+                                                        {
+                                                            "name":  "idx_elements_project",
+                                                            "columns":  [
+                                                                            "project_id"
+                                                                        ]
+                                                        },
+                                                        {
+                                                            "name":  "idx_elements_element_id",
+                                                            "columns":  [
+                                                                            "element_id"
+                                                                        ]
+                                                        }
+                                                    ],
+                                        "description":  "Pages, Forms, Buttons defined by the user"
+                                    }
+                                ],
+                     "provider":  "supabase"
+                 }
+}

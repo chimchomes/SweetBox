@@ -1,16 +1,13 @@
 // lib/actions.ts
-export type ButtonAction = {
-  action_type: "navigate" | "save_progress" | "submit_form" | "custom";
-  details: string;
-  target?: string;
-};
-
-export function describeActions(actions: ButtonAction[]): string[] {
-  if (!actions || actions.length === 0) return ["    (no actions defined)"];
-  return actions.map((a) => {
-    const base = `    - ${a.action_type}`;
-    const withTarget = a.target ? `${base} → ${a.target}` : base;
-    const withDetails = a.details ? `${withTarget} :: ${a.details}` : withTarget;
-    return withDetails;
-  });
+export type SBAction = { action_type?: string; target?: string; details?: string };
+export function describeActions(actions: SBAction[]): string[] {
+  if (!Array.isArray(actions)) return [];
+  const out: string[] = [];
+  for (const a of actions) {
+    const type = a.action_type || 'unknown';
+    const tgt = a.target ? ` -> ${a.target}` : '';
+    const det = a.details ? ` (${a.details})` : '';
+    out.push(`    * ${type}${tgt}${det}`);
+  }
+  return out;
 }
