@@ -1,47 +1,35 @@
-﻿// lib/memoryStore.ts
-// Temporary in-memory element store for SweetBox Phase 5.
-// Persists across hot-reload using a global.
-
-export type SweetboxElementType = "page" | "form" | "button";
-
-export interface SweetboxElement {
+// lib/memoryStore.ts
+export type ProjectInfo = { project_id: string; project_name: string };
+export type ElementInfo = {
   project_id: string;
-  type: SweetboxElementType;
+  type: 'page' | 'form' | 'button';
   element_id: string;
   display_name: string;
   description: string;
-}
-
-const globalAny = global as any;
-
-// keep the store across hot reloads in dev
-if (!globalAny.__SWEETBOX_STORE__) {
-  globalAny.__SWEETBOX_STORE__ = {
-    elements: [] as SweetboxElement[],
-  };
-}
-
-const store = globalAny.__SWEETBOX_STORE__ as {
-  elements: SweetboxElement[];
 };
 
-export function listElements(project_id: string, type?: SweetboxElementType) {
-  return store.elements.filter(
-    (el: SweetboxElement) =>
-      el.project_id === project_id && (!type || el.type === type)
-  );
-}
+const _projects: ProjectInfo[] = [
+  { project_id: 'sweetbox_001', project_name: 'SweetBox' },
+];
 
-export function addElement(data: SweetboxElement) {
-  // dedupe by (project_id, type, element_id)
-  const exists = store.elements.find(
-    (el) =>
-      el.project_id === data.project_id &&
-      el.element_id === data.element_id &&
-      el.type === data.type
-  );
-  if (!exists) {
-    store.elements.push(data);
-  }
-  return data;
+const _elements: ElementInfo[] = [
+  {
+    project_id: 'sweetbox_001',
+    type: 'page',
+    element_id: 'page_dashboard',
+    display_name: 'Dashboard',
+    description: 'Main dashboard with metrics and quick actions',
+  },
+  {
+    project_id: 'sweetbox_001',
+    type: 'button',
+    element_id: 'btn_save',
+    display_name: 'Save',
+    description: 'Save current progress',
+  },
+];
+
+export function listProjects(): ProjectInfo[] { return _projects; }
+export function listElements(projectId: string): ElementInfo[] {
+  return _elements.filter((e) => e.project_id === projectId);
 }
