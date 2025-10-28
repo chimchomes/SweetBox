@@ -1,25 +1,36 @@
 // app/api/projects/route.ts
 import { NextRequest } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 import { jsonResponse, errorResponse } from '@/lib/http'
-import { supabase } from '@/lib/db'
+import { listProjects } from '@/lib/memoryStore'
+
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!url || !key) return null
+  return createClient(url, key)
+}
 
 // GET /api/projects
-// Returns list of projects from Supabase 'projects' table
 export async function GET(req: NextRequest) {
   try {
-    const { data, error } = await supabase
-      .from('projects')
-      .select('project_id, project_name, app_goal, audience, default_route')
-      .order('project_name', { ascending: true })
+    const sb = getSupabase()
+    if (sb) {
+      const { data, error } = await sb
+        .from('projects')
+        .select('project_id, project_name')
+        .order('project_id', { ascending: true })
 
-    if (error) {
-      console.error('GET /api/projects supabase error:', error)
-      return errorResponse('DB error (projects)', 500)
+      if (!error && data) return jsonResponse({ projects: data })
+      if (error) console.error('Supabase /api/projects error:', error)
     }
 
-    return jsonResponse({ projects: data || [] })
+    const fallback = listProjects()
+    return jsonResponse({ projects: fallback })
   } catch (err: any) {
-    console.error('GET /api/projects fatal error:', err)
+    console.error('GET /api/projects failed:', err)
     return errorResponse('Internal Server Error (/api/projects)', 500)
   }
 }

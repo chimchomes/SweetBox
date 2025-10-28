@@ -1,17 +1,29 @@
 // lib/flow.ts
-export function getFlow(devSpec:any) {
-  if (!devSpec) return { nodes: [], links: [] }
-  const nodes = []
-  const links = []
+export function getFlow(devSpec: any) {
+  if (!devSpec) return { nodes: [] as any[], links: [] as any[] };
 
-  devSpec.pages?.forEach((p:any) => nodes.push({ id:p.id, type:'page', label:p.label }))
-  devSpec.forms?.forEach((f:any) => nodes.push({ id:f.id, type:'form', label:f.label }))
-  devSpec.buttons?.forEach((b:any) => nodes.push({ id:b.id, type:'button', label:b.label }))
+  const nodes: any[] = [];
+  const links: any[] = [];
 
-  // simple example linking buttons to pages/forms
-  devSpec.buttons?.forEach((b:any) => {
-    links.push({ from:b.id, to:'page_dashboard' })
-  })
+  devSpec.pages?.forEach((p: any) =>
+    nodes.push({ id: p.id, type: "page", label: p.label })
+  );
+  devSpec.forms?.forEach((f: any) =>
+    nodes.push({ id: f.id, type: "form", label: f.label })
+  );
+  devSpec.buttons?.forEach((b: any) =>
+    nodes.push({ id: b.id, type: "button", label: b.label })
+  );
 
-  return { nodes, links }
+  devSpec.buttons?.forEach((b: any) => {
+    if (b.actions && Array.isArray(b.actions)) {
+      b.actions.forEach((a: any) => {
+        if (a && a.action_type === "navigate" && a.target) {
+          links.push({ source: b.id, target: a.target });
+        }
+      });
+    }
+  });
+
+  return { nodes, links };
 }

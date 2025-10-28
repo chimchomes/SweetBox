@@ -1,65 +1,44 @@
 // lib/memoryStore.ts
-import type { ButtonAction } from "./actions";
+// Simple in-memory store used as fallback in dev.
+// Primary integration is Supabase; memoryStore is non-persistent.
 
-export type ProjectInfo = {
+type SBElement = {
   project_id: string;
-  project_name: string;
-};
-
-export type ElementInfo = {
-  project_id: string;
-  type: "page" | "form" | "button";
+  type: "page" | "form" | "button" | "form_field";
   element_id: string;
   display_name: string;
-  description: string;
-  button_actions?: ButtonAction[];
+  description?: string | null;
+  button_actions?: any[] | null;
+  id?: number;
 };
 
-const _projects: ProjectInfo[] = [
-  { project_id: "sweetbox_001", project_name: "SweetBox" },
-];
+const _store: { projects: any[]; elements: SBElement[] } = {
+  projects: [
+    { project_id: "sweetbox_001", project_name: "SweetBox" }
+  ],
+  elements: [
+    { project_id: "sweetbox_001", type: "page", element_id: "page_dashboard", display_name: "Dashboard", description: "Main dashboard", id: 1 }
+  ]
+};
 
-const _elements: ElementInfo[] = [
-  {
-    project_id: "sweetbox_001",
-    type: "page",
-    element_id: "page_dashboard",
-    display_name: "Dashboard",
-    description: "Main dashboard with metrics and quick actions",
-  },
-  {
-    project_id: "sweetbox_001",
-    type: "button",
-    element_id: "btn_save",
-    display_name: "Save",
-    description: "Save current progress",
-  },
-  {
-    project_id: "sweetbox_001",
-    type: "button",
-    element_id: "btn_go_dashboard",
-    display_name: "Go to Dashboard",
-    description: "Navigate user back to main dashboard",
-  },
-];
-
-export function listProjects(): ProjectInfo[] {
-  return _projects;
+export function listProjects() {
+  return _store.projects;
 }
 
-export function listElements(projectId: string): ElementInfo[] {
-  return _elements.filter((e) => e.project_id === projectId);
+export function listElements(projectId: string) {
+  return _store.elements.filter(e => e.project_id === projectId);
 }
 
-export function updateElementDescription(
-  projectId: string,
-  element_id: string,
-  newDescription: string
-): boolean {
-  const match = _elements.find(
-    (e) => e.project_id === projectId && e.element_id === element_id
-  );
-  if (!match) return false;
-  match.description = newDescription;
-  return true;
+export function addElement(elem: SBElement) {
+  const nextId = (_store.elements.reduce((s, e) => Math.max(s, e.id || 0), 0) || 0) + 1;
+  const copy = { ...elem, id: nextId };
+  _store.elements.push(copy);
+  return copy;
+}
+
+export function updateElement(id: number, patch: Partial<SBElement>) {
+  const idx = _store.elements.findIndex(e => e.id === id);
+  if (idx === -1) return null;
+  _store.elements[idx] = { ..._store.elements[idx], ...patch };
+  return _store.elements[idx];
 }

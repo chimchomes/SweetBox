@@ -1,21 +1,15 @@
-// app/editor/page.tsx
 'use client'
-
-import ElementList from '@/components/ElementList'
 
 export default function EditorPage() {
   return (
     <main className="p-6 space-y-6">
-      <header>
-        <h1 className="text-3xl font-semibold">Project Elements Editor</h1>
-        <p className="text-gray-600 text-sm mt-2">
-          Edit element descriptions inline. Changes are applied to memoryStore instantly.
-        </p>
-      </header>
-
-      <section className="bg-white p-4 rounded-xl shadow-card border border-gray-200">
-        <ElementList />
-      </section>
+      <h1 className="text-2xl font-semibold text-gray-900">Editor (WIP)</h1>
+      <p className="text-sm text-gray-600">
+        This screen will let you edit elements in future phases.
+      </p>
+      <div className="bg-white rounded-xl shadow-card border border-gray-200 p-4 text-sm text-gray-500">
+        No interactive editor is active yet.
+      </div>
     </main>
   )
 }
